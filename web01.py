@@ -677,7 +677,7 @@ HTML = '''
     <!-- ── TRANG CHỦ ── -->
     <div class="page active" id="page-home">
         <div class="page-header">
-            <h1>⚡ Giám Sát Thời Gian Thực</h1>
+            <h1>⚡ THÍ NGHIỆM BIỂU DIỄN DÒNG ĐIỆN - MẠCH ĐIỆN GIÁM SÁT THỜI GIAN THỰC</h1>
             <p>1 cảm biến dòng · 2 cảm biến điện áp · Cập nhật mỗi 1 giây</p>
         </div>
 
