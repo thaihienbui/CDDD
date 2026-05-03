@@ -443,13 +443,17 @@ HTML = '''
 </main>
 
 <script>
+// Force HTTPS
+if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    location.replace('https:' + location.href.substring(location.protocol.length));
+}
+
 // NAVIGATION
 function switchPage(name, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('page-' + name).classList.add('active');
     el.classList.add('active');
-    return false;
 }
 
 // CHARTS
@@ -457,26 +461,13 @@ function makeChart(id, label, color, fill=true) {
     const ctx = document.getElementById(id).getContext('2d');
     return new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: label,
-                data: [],
-                borderColor: color,
-                backgroundColor: fill ? color + '18' : 'transparent',
-                borderWidth: 2,
-                pointRadius: 2,
-                pointBackgroundColor: color,
-                tension: 0.4,
-                fill: fill,
-            }]
-        },
+        data: { labels: [], datasets: [{ label: label, data: [], borderColor: color, backgroundColor: fill ? color + '18' : 'transparent', borderWidth: 2, pointRadius: 2, pointBackgroundColor: color, tension: 0.4, fill: fill }] },
         options: {
             responsive: true,
             animation: false,
             plugins: { legend: { display: false } },
             scales: {
-                x: { ticks: { color: 'rgba(200,230,255,0.4)', font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                x: { ticks: { color: 'rgba(200,230,255,0.4)', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
                 y: { ticks: { color: 'rgba(200,230,255,0.4)', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
             }
         }
@@ -497,27 +488,33 @@ function setChart(chart, labels, values) {
     chart.update('none');
 }
 
-// FETCH
+// FETCH DATA
 let lastI=0, lastU1=0, lastU2=0, lastR1=0, lastR2=0, lastQ1=0, lastQ2=0;
 
 async function fetchData() {
     try {
-        const res = await fetch('/api/latest', { cache: "no-store" });
+        const res = await fetch('/api/latest', { 
+            cache: "no-store",
+            headers: { 'Cache-Control': 'no-cache' }
+        });
         const d = await res.json();
 
-        lastI  = d.I;  lastU1 = d.U1; lastU2 = d.U2;
-        lastR1 = d.R1; lastR2 = d.R2;
-        lastQ1 = d.Q1; lastQ2 = d.Q2;
+        lastI  = d.I  || 0;
+        lastU1 = d.U1 || 0;
+        lastU2 = d.U2 || 0;
+        lastR1 = d.R1 || 0;
+        lastR2 = d.R2 || 0;
+        lastQ1 = d.Q1 || 0;
+        lastQ2 = d.Q2 || 0;
 
+        // ... (phần còn lại giữ nguyên như cũ)
         const P1 = lastI * lastU1;
         const P2 = lastI * lastU2;
 
-        // Cards
         document.getElementById('valI').textContent  = lastI.toFixed(4);
         document.getElementById('valU1').textContent = lastU1.toFixed(4);
         document.getElementById('valU2').textContent = lastU2.toFixed(4);
 
-        // Calc
         document.getElementById('calcP1').textContent = P1.toFixed(4);
         document.getElementById('calcR1').textContent = lastR1.toFixed(4);
         document.getElementById('calcQ1').textContent = lastQ1.toFixed(3);
@@ -527,7 +524,7 @@ async function fetchData() {
         document.getElementById('calcCount').textContent = d.count || 0;
         document.getElementById('calcV').textContent = d.V ? (d.V / 1e-5).toFixed(4) : '—';
 
-        // Status
+        // Status, context, charts... (giữ nguyên như code cũ của bạn)
         const dot = document.getElementById('statusDot');
         if (d.timestamp) {
             dot.classList.remove('offline');
@@ -547,7 +544,6 @@ async function fetchData() {
         document.getElementById('ctxQ1').textContent = lastQ1.toFixed(3);
         document.getElementById('ctxQ2').textContent = lastQ2.toFixed(3);
 
-        // Charts
         const ts = d.timestamps;
         setChart(chartI,  ts, d.histI);
         setChart(chartU1, ts, d.histU1);
@@ -558,6 +554,7 @@ async function fetchData() {
         setChart(chartQ2, ts, d.histQ2);
 
     } catch(e) {
+        console.error(e);
         document.getElementById('statusDot').classList.add('offline');
         document.getElementById('statusText').textContent = 'Lỗi kết nối server';
     }
@@ -565,7 +562,6 @@ async function fetchData() {
 
 fetchData();
 setInterval(fetchData, 1000);
-
 // CHATBOT
 function addMessage(text, isUser) {
     const chatBox = document.getElementById('chatBox');
