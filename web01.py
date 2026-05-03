@@ -57,6 +57,7 @@ HTML = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>⚡ Đo Điện ESP32-S3</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
@@ -501,7 +502,7 @@ let lastI=0, lastU1=0, lastU2=0, lastR1=0, lastR2=0, lastQ1=0, lastQ2=0;
 
 async function fetchData() {
     try {
-        const res = await fetch('/api/latest');
+        const res = await fetch('/api/latest', { cache: "no-store" });
         const d = await res.json();
 
         lastI  = d.I;  lastU1 = d.U1; lastU2 = d.U2;
@@ -598,7 +599,11 @@ async function sendMessage() {
     if (!message) return;
     addMessage(message, true); input.value=''; showTyping();
     try {
-        const res = await fetch('/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message}) });
+        const res = await fetch('/chat', { 
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body:JSON.stringify({message}) 
+        });
         const data = await res.json();
         removeTyping(); addMessage(data.response, false);
     } catch(e) { removeTyping(); addMessage('Lỗi kết nối chatbot. Thử lại sau nhé!', false); }
