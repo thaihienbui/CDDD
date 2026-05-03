@@ -713,5 +713,8 @@ def chat():
 if __name__ == '__main__':
     print("⚡ Server Đo Điện ESP32-S3 đang chạy...")
     print("🌐 http://127.0.0.1:5000")
-    print('📡 JSON: {"I":0.1,"U1":3.3,"U2":5.0,"V":1.5e-5}')
-    app.run(host='0.0.0.0', port=5000, threaded=True, debug=False)
+    print('📡 Gửi JSON mẫu: {"I":0.1,"U1":3.3,"U2":5.0,"V":1.5e-5}')
+    
+    # Lấy port từ environment (quan trọng khi deploy lên Render/Heroku)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, threaded=True, debug=False)
